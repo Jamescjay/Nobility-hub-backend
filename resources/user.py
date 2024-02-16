@@ -1,4 +1,5 @@
 from flask_restful import Resource, reqparse, fields, marshal_with
+from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_bcrypt import generate_password_hash, check_password_hash
 from models import User, db
 
@@ -55,6 +56,27 @@ class Register(Resource):
       db.session.commit()
       db.session.refresh(user)
 
-      return {"message": "Account created successfully", "status": "success", "user": user}
+      return {"message": "Account created successfully", "status": "success", "user": user}, 201
     except:
-      return {"message": "Unable to create account", "status": "fail"}
+      return {"message": "Unable to create account", "status": "fail"}, 400
+    
+class Login(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('email', required=True, help="Email is required")
+    parser.add_argument('password', required=True, help="Password is required")
+
+    def post(self):
+      data = Login.parser.parse_args()
+      user = User.query.filter_by(email = data['email']).first()
+
+      if user:
+        is_password_correct = check_password_hash(user.password, data['password'])
+
+        if is_password_correct:
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(user.id)
+            return {"message": "Login successfully","access_token": access_token, "refresh_token": refresh_token, "status": "success"}, 200
+        else:
+          return {"message": "Invalid email/password", "status": "fail"}, 403
+      else:
+        return {"message": "Invalid email/password", "status": "fail"}, 403
