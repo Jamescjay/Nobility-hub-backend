@@ -6,7 +6,6 @@ import random
 import string
 
 app = Flask(__name__)
-CORS(app)
 
 SECRET_KEY = '905678'  
 
