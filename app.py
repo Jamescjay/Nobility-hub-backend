@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 SECRET_KEY = '905678'  
 
-# Dummy admin data
+# admin data for the test
 admin_data = {'email': 'admin@moringaschool.com', 'password': 'password'}
 
 # Dictionary to store user details
