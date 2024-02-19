@@ -6,6 +6,7 @@ import random
 import string
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*", "methods": ["OPTIONS", "POST"], "allow_headers": ["Content-Type"]}})
 
 SECRET_KEY = '905678'  
 
@@ -20,7 +21,7 @@ def index():
     return '<h1>Welcome to the back end of the application</h1>'
 
 @app.route('/login', methods=['POST'])
-def login():
+def adminlogin():
     data = request.get_json()
 
     # Check if JSON data is provided
