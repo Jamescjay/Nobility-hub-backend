@@ -23,6 +23,10 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
+api.add_resource(Register, '/register')
+api.add_resource(Login, '/learners-login')
+
+
 SECRET_KEY = '905678'  
 
 # admin data for the test
@@ -36,7 +40,7 @@ def index():
     return '<h1>Welcome to the back end of the application</h1>'
 
 @app.route('/login', methods=['POST'])
-def login():
+def adminlogin():
     data = request.get_json()
 
     # Check if JSON data is provided
@@ -79,8 +83,6 @@ def generate_new_password():
     new_password = ''.join(random.choice(characters) for i in range(password_length))
     return new_password
     
-api.add_resource(Register, '/register')
-api.add_resource(Login, '/login')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
