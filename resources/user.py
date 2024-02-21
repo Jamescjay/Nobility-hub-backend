@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse, fields, marshal_with
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_bcrypt import generate_password_hash, check_password_hash
 from models import User, db
+from flask import request
 
 user_fields={
     "id":fields.Integer,
@@ -80,3 +81,23 @@ class Login(Resource):
           return {"message": "Invalid email/password", "status": "fail"}, 403
       else:
         return {"message": "Invalid email/password", "status": "fail"}, 403
+      
+class AdminLogin(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('email', required=True, help="Email is required")
+    parser.add_argument('password', required=True, help="Password is required")
+
+    def post(self):
+        data = AdminLogin.parser.parse_args()
+
+        # Admin credentials to the system
+        admin_credentials = {
+            'admin@nobility-hub.com': 'password'
+        }
+
+        if data['email'] in admin_credentials and data['password'] == admin_credentials[data['email']]:
+            access_token = create_access_token(identity=data['email'])
+            refresh_token = create_refresh_token(data['email'])
+            return {"message": "Admin login successfully", "access_token": access_token, "refresh_token": refresh_token, "status": "success"}, 200
+        else:
+            return {"message": "Invalid email/password for admin", "status": "fail"}, 403
