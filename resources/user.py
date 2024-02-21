@@ -60,6 +60,42 @@ class Register(Resource):
     except:
       return {"message": "Unable to create account", "status": "fail"}, 400
     
+  def get(self, id=None):
+      if id:
+          user = User.query.get(id)
+          if user:
+              user_data = {
+                  "id": user.id,
+                  "username": user.username,
+                  "first_name": user.first_name,
+                  "last_name": user.last_name,
+                  "email": user.email,
+                  "gender": user.gender,
+                  "role": user.role,
+                  "phone": user.phone,
+                  "created_at": user.created_at.isoformat() if user.created_at else None,
+                  "updated_at": user.updated_at.isoformat() if user.updated_at else None
+              }
+              return user_data, 200
+          else:
+              return {"message": "User not found"}, 404
+      else:
+          users = User.query.all()
+          users_data = [{
+              "id": user.id,
+              "username": user.username,
+              "first_name": user.first_name,
+              "last_name": user.last_name,
+              "email": user.email,
+              "gender": user.gender,
+              "role": user.role,
+              "phone": user.phone,
+              "created_at": user.created_at.isoformat() if user.created_at else None,
+              "updated_at": user.updated_at.isoformat() if user.updated_at else None
+          } for user in users]
+          return users_data, 200
+
+
 class Login(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('email', required=True, help="Email is required")
@@ -75,7 +111,7 @@ class Login(Resource):
         if is_password_correct:
             access_token = create_access_token(identity=user.id)
             refresh_token = create_refresh_token(user.id)
-            return {"message": "Login successfully","access_token": access_token, "refresh_token": refresh_token, "status": "success"}, 200
+            return {"message": "Login successfully","access_token": access_token, "refresh_token": refresh_token, "status": "success", "id": user.id}, 200
         else:
           return {"message": "Invalid email/password", "status": "fail"}, 403
       else:

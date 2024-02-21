@@ -11,6 +11,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from models import db
 from resources.user import Register, Login
+from resources.message import MessageResource 
 
 
 app = Flask(__name__)
@@ -23,8 +24,9 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-api.add_resource(Register, '/register')
+api.add_resource(Register, '/register', '/register/<int:id>')
 api.add_resource(Login, '/learners-login')
+api.add_resource(MessageResource, '/message', '/message/<int:message_id>')
 
 
 SECRET_KEY = '905678'  
