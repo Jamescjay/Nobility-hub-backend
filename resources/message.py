@@ -10,10 +10,15 @@ message_fields = {
         'id': fields.Integer,
         'username': fields.String,
     }),
+    'recipient': fields.Nested({
+        'id': fields.Integer,
+        'username': fields.String,
+    }),
 }
 
 message_put_args = reqparse.RequestParser()
 message_put_args.add_argument('sender', type=str, help='Sender username is required', required=True)
+message_put_args.add_argument('recipient', type=str, help='Recipient username is required', required=True)
 message_put_args.add_argument('content', type=str, help='Content of the message is required', required=True)
 
 class MessageResource(Resource):
@@ -41,11 +46,17 @@ class MessageResource(Resource):
     def post(self):
         args = message_put_args.parse_args()
         sender_username = args['sender']
+        recipient_username = args['recipient']
+        
         sender = User.query.filter_by(username=sender_username).first()
+        recipient = User.query.filter_by(username=recipient_username).first()
+        
         if not sender:
             return {'message': 'Sender not found'}, 404
+        if not recipient:
+            return {'message': 'Recipient not found'}, 404
 
-        message = Message(content=args['content'], sender=sender)
+        message = Message(content=args['content'], sender=sender, recipient=recipient)
         db.session.add(message)
         db.session.commit()
         return message, 201

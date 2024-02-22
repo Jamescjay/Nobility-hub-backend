@@ -1,8 +1,8 @@
-"""update
+"""add recipient
 
-Revision ID: 148427909d5e
+Revision ID: 001766b7bc13
 Revises: 
-Create Date: 2024-02-20 10:19:54.115690
+Create Date: 2024-02-22 15:40:05.003393
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '148427909d5e'
+revision = '001766b7bc13'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,8 +25,8 @@ def upgrade():
     sa.Column('username', sa.String(length=25), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('phone', sa.String(), nullable=False),
-    sa.Column('role', sa.Text(), nullable=False),
-    sa.Column('gender', sa.Text(), nullable=False),
+    sa.Column('role', sa.String(), nullable=False),
+    sa.Column('gender', sa.String(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.TIMESTAMP(), nullable=True),
@@ -37,9 +37,11 @@ def upgrade():
     op.create_table('message',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
-    sa.Column('timestamp', sa.TIMESTAMP(), nullable=True),
-    sa.Column('sender_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ),
+    sa.Column('timestamp', sa.TIMESTAMP(timezone=True), nullable=True),
+    sa.Column('fk_message_sender_id', sa.Integer(), nullable=False),
+    sa.Column('fk_message_recipient_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['fk_message_recipient_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['fk_message_sender_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
