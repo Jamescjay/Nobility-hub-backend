@@ -76,7 +76,7 @@ class Login(Resource):
         if is_password_correct:
             access_token = create_access_token(identity=user.id)
             refresh_token = create_refresh_token(user.id)
-            return {"message": "Login successfully","access_token": access_token, "refresh_token": refresh_token, "status": "success"}, 200
+            return {"message": "Login successfully","access_token": access_token, "refresh_token": refresh_token, "status": "success", "userId": user.id}, 200
         else:
           return {"message": "Invalid email/password", "status": "fail"}, 403
       else:
