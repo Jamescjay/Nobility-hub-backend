@@ -18,8 +18,9 @@ jwt = JWTManager(app)
 
 
 # Add resources to API
-api.add_resource(Register, '/register')
+api.add_resource(Register, '/register', '/register/<int:id>')
 api.add_resource(Login, '/learners-login')
+api.add_resource(MessageResource, '/message', '/message/<int:message_id>')
 api.add_resource(AdminLogin, '/admin-login')
 
 
