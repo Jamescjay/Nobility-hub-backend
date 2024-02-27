@@ -19,23 +19,6 @@ class User(db.Model):
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
     updated_at = db.Column(db.TIMESTAMP, onupdate=db.func.now())
 
-class Course(db.Model):
-    __tablename__ = "course"
-
-    id=db.Column(db.Integer, primary_key=True)
-    title=db.Column(db.String(120), nullable=False)
-    phase=db.Column(db.Integer, nullable=False)
-    description=db.Column(db.Text, nullable=False)
-    course_url=db.Column(db.String, nullable=False)
-    # cohort_id=db.Column(db.Integer, db.ForeignKey('cohort_id'), nullable=True)
-
-
-# class Authentication(db.Model):
-#     __tablename__ ="authentication"
-#     id= db.Column(db.Integer, primary_key=True)
-#     email = db.Column(db.String, nullable=False, unique=True)
-#     password = db.Column(db.String, nullable=False)
-#     created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
     messages_sent = relationship("Message", back_populates="sender", foreign_keys='Message.sender_id')
     messages_received = relationship("Message", back_populates="recipient", foreign_keys='Message.recipient_id')
 
@@ -50,3 +33,12 @@ class Message(db.Model):
 
     sender = relationship("User", back_populates="messages_sent", foreign_keys=[sender_id])
     recipient = relationship("User", back_populates="messages_received", foreign_keys=[recipient_id])
+
+class Course(db.Model):
+    __tablename__ = "course"
+
+    id=db.Column(db.Integer, primary_key=True)
+    title=db.Column(db.String(120), nullable=False)
+    phase=db.Column(db.Integer, nullable=False)
+    description=db.Column(db.Text, nullable=False)
+    course_url=db.Column(db.String, nullable=False)
