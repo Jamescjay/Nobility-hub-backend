@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from resources.user import Register, Login, AdminLogin
 from resources.message import MessageResource
+from resources.course import CreateCourse, FindCourses, UpdateCourse, DeleteCourse
 from models import db
 
 
@@ -31,6 +32,11 @@ api.add_resource(Register, '/register', '/register/<int:id>')
 api.add_resource(Login, '/learners-login')
 api.add_resource(MessageResource, '/message', '/message/<int:message_id>')
 api.add_resource(AdminLogin, '/admin-login')
+api.add_resource(CreateCourse, '/courses')
+api.add_resource(FindCourses, '/courses', '/courses/<int:course_id>')
+api.add_resource(UpdateCourse, '/courses/<int:course_id>')
+api.add_resource(DeleteCourse, '/courses/<int:course_id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
