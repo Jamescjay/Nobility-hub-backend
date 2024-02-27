@@ -11,7 +11,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from models import db
 from resources.user import Register, Login
-from resources.course import CreateCourse
+from resources.course import CreateCourse, FindCourses, UpdateCourse, DeleteCourse
 
 
 app = Flask(__name__)
@@ -27,6 +27,9 @@ jwt = JWTManager(app)
 api.add_resource(Register, '/register')
 api.add_resource(Login, '/learners-login')
 api.add_resource(CreateCourse, '/courses')
+api.add_resource(FindCourses, '/courses', '/courses/<int:course_id>')
+api.add_resource(UpdateCourse, '/courses/<int:course_id>')
+api.add_resource(DeleteCourse, '/courses/<int:course_id>')
 
 
 SECRET_KEY = '905678'  

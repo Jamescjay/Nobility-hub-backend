@@ -34,7 +34,69 @@ class CreateCourse(Resource):
         db.session.commit()
 
         return {"message":"Created Course successfully", "status":"success", "course":course}, 201
+
+class FindCourses(Resource):
     
+    def get(self,course_id=None):
+        if course_id:
+            course = Course.query.get(course_id)
+            if course:
+                course_data = {
+                    "id": course.id,
+                    "title": course.title,
+                    "phase" : course.phase,
+                    "description" : course.description,
+                    "course_url" : course.course_url,
+                }
+                return course_data, 200
+            else:
+                return {"message":"Course not Found"}, 400
+        else:
+            all_courses = Course.query.all()
+            courses_data = [{
+                "id": course.id,
+                "title": course.title,
+                "phase" : course.phase,
+                "description" : course.description,
+                "course_url" : course.course_url,
+            }for course in all_courses]
+            return courses_data, 200
+
+
+    
+        
+class UpdateCourse(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('title')
+    parser.add_argument('phase', type=int)
+    parser.add_argument('description')
+    parser.add_argument('course_url')
+
+    @marshal_with(response_field)
+    def put(self, course_id):
+        data = UpdateCourse.parser.parse_args()
+        course = Course.query.get(course_id)
+        if course:
+            for key, value in data.items():
+                if value is not None:
+                    setattr(course, key, value)
+            db.session.commit()
+            return {"message":"Course updated successfully", "status":"success", "course":course}, 200
+        else:
+            return {"message":"Course not found", "status":"fail"},404
+
+class DeleteCourse(Resource):
+    def delete(self, course_id):
+        course = Course.query.get(course_id)
+        if course:
+            db.session.delete(course)
+            db.session.commit()
+            return {"message":"Course deleted successfully", "status":"success"}, 200
+        else:
+            return {"message":"Course not found", "status":"fail"}, 404
+
+
+
 
 
 
