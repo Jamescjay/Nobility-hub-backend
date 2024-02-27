@@ -1,93 +1,41 @@
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from datetime import datetime, timedelta
-import jwt
-import random
-import string
+from flask import Flask
 from flask_migrate import Migrate
-from flask_restful import  Api
-from flask_bcrypt import Bcrypt
+from flask_restful import Api
 from flask_jwt_extended import JWTManager
-from models import db
-from resources.user import Register, Login
+from flask_cors import CORS
+from flask_mail import Mail, Message
+from resources.user import Register, Login, AdminLogin
+from resources.message import MessageResource
 from resources.course import CreateCourse, FindCourses, UpdateCourse, DeleteCourse
+from models import db
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-app.config["JWT_SECRET_KEY"] = "super-secret" 
+app.config["JWT_SECRET_KEY"] = "super-secret"
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'nobilityhub@gmail.com'
+app.config['MAIL_PASSWORD'] = 'orcvtwyqejxejigv'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+
 CORS(app)
 db.init_app(app)
-migrate = Migrate(app, db)
 api = Api(app)
-bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
+mail = Mail(app)
+migrate = Migrate(app, db)
 
-api.add_resource(Register, '/register')
+# Add resources to API
+api.add_resource(Register, '/register', '/register/<int:id>')
 api.add_resource(Login, '/learners-login')
+api.add_resource(MessageResource, '/message', '/message/<int:message_id>')
+api.add_resource(AdminLogin, '/admin-login')
 api.add_resource(CreateCourse, '/courses')
 api.add_resource(FindCourses, '/courses', '/courses/<int:course_id>')
 api.add_resource(UpdateCourse, '/courses/<int:course_id>')
 api.add_resource(DeleteCourse, '/courses/<int:course_id>')
-
-
-SECRET_KEY = '905678'  
-
-# admin data for the test
-admin_data = {'email': 'admin@moringaschool.com', 'password': 'password'}
-
-# Dictionary to store user details
-user_data = {'admin@moringaschool.com': admin_data}
-
-@app.route('/')
-def index():
-    return '<h1>Welcome to the back end of the application</h1>'
-
-@app.route('/login', methods=['POST'])
-def adminlogin():
-    data = request.get_json()
-
-    # Check if JSON data is provided
-    if not data or 'email' not in data or 'password' not in data:
-        return jsonify({"success": False, "message": "Invalid request format"}), 400
-
-    # Check login credentials
-    if data['email'] in user_data and data['password'] == user_data[data['email']]['password']:
-        expiration_time = datetime.utcnow() + timedelta(hours=1)
-        token = jwt.encode({'email': data['email'], 'exp': expiration_time}, SECRET_KEY, algorithm='HS256')
-
-        return jsonify({"success": True, "message": "Login successful", "token": token, 'user_email': data['email'], 'role': 'admin'}), 200
-    else:
-        return jsonify({"success": False, "message": "Invalid credentials"}), 401
-    
-@app.route('/forgot_password', methods=['POST'])
-def forgot_password():
-    data = request.get_json()
-
-    # Check if JSON data is provided
-    if not data or 'email' not in data:
-        return jsonify({"success": False, "message": "Invalid request format"}), 400
-
-    user_email = data['email']
-
-    # Check if the provided email exists
-    if user_email in user_data:
-        # Generate a new password
-        new_password = generate_new_password()
-        user_data[user_email]['password'] = new_password
-
-        return jsonify({"success": True, "message": f"Password updated successfully. New password: {new_password}"}), 200
-    else:
-        return jsonify({"success": False, "message": "Invalid email"}), 401
-
-def generate_new_password():
-    # Generate a random password
-    password_length = 10
-    characters = string.ascii_letters + string.digits + string.punctuation
-    new_password = ''.join(random.choice(characters) for i in range(password_length))
-    return new_password
-    
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
