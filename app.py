@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_mail import Mail, Message
 from resources.user import Register, Login, AdminLogin
+from resources.message import MessageResource
 from models import db
 
 
