@@ -58,7 +58,7 @@ class Register(Resource):
 
             
             msg = Message('Confirmation Email', sender='nobilityhub@gmail.com', recipients=[data['email']])
-            msg.body = f"Dear {data['first_name']},\n\nYour account has been successfully registered. Your password is: {user_password}\n\nPlease click on the following link to confirm your email: http://localhost:3001"
+            msg.body = f"Dear {data['first_name']},\n\nYour account has been successfully registered. Your password is: {user_password}\n\nPlease click on the following link to confirm your email: http://localhost:3000"
             mail.send(msg)
 
             return {"message": "Account created successfully", "status": "success", "user": user}, 201

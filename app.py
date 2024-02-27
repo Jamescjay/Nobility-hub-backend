@@ -7,6 +7,7 @@ from flask_mail import Mail, Message
 from resources.user import Register, Login, AdminLogin
 from models import db
 
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config["JWT_SECRET_KEY"] = "super-secret"
