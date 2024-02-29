@@ -3,11 +3,10 @@ from flask_migrate import Migrate
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-from flask_mail import Mail, Message
+from flask_mail import Mail
 from resources.user import Register, Login, AdminLogin
 from resources.message import MessageResource
 from models import db
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -18,6 +17,8 @@ app.config['MAIL_USERNAME'] = 'nobilityhub@gmail.com'
 app.config['MAIL_PASSWORD'] = 'orcvtwyqejxejigv'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+app.config['CHAT_ENGINE_PRIVATE_KEY'] = 'eed19375-3920-4850-8bad-a3822d296ca0'
+app.config['CHAT_ENGINE_PROJECT_ID'] = '4c4af054-358b-4205-bbc1-f87bad0b0a81'
 
 CORS(app)
 db.init_app(app)

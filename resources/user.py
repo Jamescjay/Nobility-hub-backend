@@ -2,8 +2,10 @@ from flask_restful import Resource, reqparse, fields, marshal_with
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_bcrypt import generate_password_hash, check_password_hash
 from models import User, db
-from flask import request
+from flask import request, current_app
 from flask_mail import Message
+import requests
+import os
 
 user_fields = {
     "id": fields.Integer,
@@ -38,6 +40,7 @@ class Register(Resource):
     def post(self):
         from app import mail
 
+
         data = Register.parser.parse_args()
         user_password = data['password']
         data['password'] = generate_password_hash(data['password'])
@@ -56,10 +59,25 @@ class Register(Resource):
             db.session.add(user)
             db.session.commit()
 
-            
+            # Sending confirmation email
             msg = Message('Confirmation Email', sender='nobilityhub@gmail.com', recipients=[data['email']])
-            msg.body = f"Dear {data['first_name']},\n\nYour account has been successfully registered. Your password is: {user_password}\n\nPlease click on the following link to confirm your email: http://localhost:3001"
+            msg.body = f"Dear {data['first_name']},\n\nYour account has been successfully registered. Your password is: {user_password}\n\nPlease click on the following link to confirm your email: http://localhost:3000"
             mail.send(msg)
+
+            # Adding user to ChatEngine.io
+            chat_engine_url = 'https://api.chatengine.io/users/'
+            headers = {
+                'Private-Key': current_app.config['CHAT_ENGINE_PRIVATE_KEY']
+            }
+            chat_engine_data = {
+                "username": data['username'],
+                "secret": user_password,
+                "email": data['email'],
+                "first_name": data['first_name'],
+                "last_name": data['last_name']
+            }
+            chat_engine_response = requests.post(chat_engine_url, data=chat_engine_data, headers=headers)
+            chat_engine_response.raise_for_status()  # Raise error for unsuccessful requests
 
             return {"message": "Account created successfully", "status": "success", "user": user}, 201
         except Exception as e:
@@ -101,31 +119,52 @@ class Register(Resource):
             return users_data, 200
 
 
-
-
 class Login(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('email', required=True, help="Email is required")
     parser.add_argument('password', required=True, help="Password is required")
 
     def post(self):
-      data = Login.parser.parse_args()
-      user = User.query.filter_by(email = data['email']).first()
+        data = Login.parser.parse_args()
+        user = User.query.filter_by(email=data['email']).first()
 
-      if user:
-        is_password_correct = check_password_hash(user.password, data['password'])
+        if user:
+            is_password_correct = check_password_hash(user.password, data['password'])
 
-        if is_password_correct:
-            access_token = create_access_token(identity=user.id)
-            refresh_token = create_refresh_token(user.id)
+            if is_password_correct:
+                # Create access token
+                access_token = create_access_token(identity=user.id)
+                refresh_token = create_refresh_token(user.id)
 
-            return {"message": "Login successfully","access_token": access_token, "refresh_token": refresh_token, "status": "success", "id": user.id}, 200
+                # Send request to ChatEngine.io
+                chat_engine_url = 'https://api.chatengine.io/users/me/'
+                headers = {
+                    "Project-ID": current_app.config['CHAT_ENGINE_PROJECT_ID'],
+                    "User-Name": user.username,
+                    "User-Secret": data['password']
+                }
+                chat_engine_response = requests.get(chat_engine_url, headers=headers)
 
+                # Check if ChatEngine.io request is successful
+                if chat_engine_response.status_code == 200:
+                    return {
+                        "message": "Login successful",
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "status": "success",
+                        "id": user.id,
+                        "userName": user.username,
+                        "secret": data['password']
+                    }, 200
+                else:
+                    return {"message": "Failed to login to ChatEngine.io", "status": "fail"}, 500
+
+            else:
+                return {"message": "Invalid email/password", "status": "fail"}, 403
         else:
-          return {"message": "Invalid email/password", "status": "fail"}, 403
-      else:
-        return {"message": "Invalid email/password", "status": "fail"}, 403
-      
+            return {"message": "Invalid email/password", "status": "fail"}, 403
+
+        
 class AdminLogin(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('email', required=True, help="Email is required")
@@ -140,8 +179,40 @@ class AdminLogin(Resource):
         }
 
         if data['email'] in admin_credentials and data['password'] == admin_credentials[data['email']]:
+            # Check if admin already exists in ChatEngine.io
+            chat_engine_username = data['email']  # Use admin's email as username
+            chat_engine_url = f'https://api.chatengine.io/users/{chat_engine_username}/'
+            headers = {
+                "Private-Key": current_app.config['CHAT_ENGINE_PRIVATE_KEY'],
+            }
+            chat_engine_response = requests.get(chat_engine_url, headers=headers)
+
+            if chat_engine_response.status_code == 404:
+                # Admin not found in ChatEngine.io, add admin user
+                chat_engine_url = 'https://api.chatengine.io/users/'
+                chat_engine_data = {
+                    "username": chat_engine_username,
+                    "secret": data['password'],
+                    "email": data['email'],
+                    "first_name": "Admin",
+                    "last_name": "User"
+                }
+                chat_engine_response = requests.post(chat_engine_url, json=chat_engine_data, headers=headers)
+
+            else:
+                # Admin exists in ChatEngine.io, proceed with login
+                chat_engine_url = 'https://api.chatengine.io/users/me/'
+                headers = {
+                    "Project-ID": current_app.config['CHAT_ENGINE_PROJECT_ID'],
+                    "User-Name": chat_engine_username,
+                    "User-Secret": data['password']
+                }
+                chat_engine_response = requests.get(chat_engine_url, headers=headers)
+
+            # Admin login successful
             access_token = create_access_token(identity=data['email'])
             refresh_token = create_refresh_token(data['email'])
             return {"message": "Admin login successfully", "access_token": access_token, "refresh_token": refresh_token, "status": "success"}, 200
+
         else:
             return {"message": "Invalid email/password for admin", "status": "fail"}, 403
