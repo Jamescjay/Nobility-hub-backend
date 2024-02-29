@@ -12,8 +12,8 @@ from models import db
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-socketio = SocketIO(app, cors_allowed_origins="*")
+# CORS(app, resources={r"/*": {"origins": "*"}})
+# socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Configure your Flask app as before
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -24,6 +24,8 @@ app.config['MAIL_USERNAME'] = 'nobilityhub@gmail.com'
 app.config['MAIL_PASSWORD'] = 'orcvtwyqejxejigv'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+app.config['CHAT_ENGINE_PRIVATE_KEY'] = 'eed19375-3920-4850-8bad-a3822d296ca0'
+app.config['CHAT_ENGINE_PROJECT_ID'] = '4c4af054-358b-4205-bbc1-f87bad0b0a81'
 
 CORS(app)
 db.init_app(app)
@@ -42,31 +44,34 @@ api.add_resource(FindCourses, '/courses', '/courses/<int:course_id>')
 api.add_resource(UpdateCourse, '/courses/<int:course_id>')
 api.add_resource(DeleteCourse, '/courses/<int:course_id>')
 
-# REST API route
-@app.route('/http-call')
-def http_call():
-    data = {'data': 'This is a response from the server'}
-    return jsonify(data)
-
-# WebSocket events
-@socketio.on('connect')
-def connected():
-    print(request.sid)
-    print('client is connected')
-    emit("connected", {'data': f"id: {request.sid} is connected"})
-    
-@socketio.on('disconnect')
-def disconnect():
-    print('client is disconnected')
-    emit("disconnect", f"user {request.sid} is disconnected", broadcast=True)
-    
-@socketio.on('data')
-def handle_message(data):
-    print('Data from the front end: ', str(data))
-    emit('data', {'data': data, 'id': request.sid}, broadcast=True)
-
 if __name__ == '__main__':
+    app.run(port=5555, debug=True)
 
-    # Run the application with both REST API and WebSocket support
-    socketio.run(app, debug=True, port=5555)
+# # REST API route
+# @app.route('/http-call')
+# def http_call():
+#     data = {'data': 'This is a response from the server'}
+#     return jsonify(data)
+
+# # WebSocket events
+# @socketio.on('connect')
+# def connected():
+#     print(request.sid)
+#     print('client is connected')
+#     emit("connected", {'data': f"id: {request.sid} is connected"})
+    
+# @socketio.on('disconnect')
+# def disconnect():
+#     print('client is disconnected')
+#     emit("disconnect", f"user {request.sid} is disconnected", broadcast=True)
+    
+# @socketio.on('data')
+# def handle_message(data):
+#     print('Data from the front end: ', str(data))
+#     emit('data', {'data': data, 'id': request.sid}, broadcast=True)
+
+# if __name__ == '__main__':
+
+#     # Run the application with both REST API and WebSocket support
+#     socketio.run(app, debug=True, port=5555)
 
