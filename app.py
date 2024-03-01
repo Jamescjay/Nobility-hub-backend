@@ -46,7 +46,7 @@ api.add_resource(UpdateCourse, '/courses/<int:course_id>')
 api.add_resource(DeleteCourse, '/courses/<int:course_id>')
 
 if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    app.run(port=5555, debug=false)
 
 # # REST API route
 # @app.route('/http-call')
