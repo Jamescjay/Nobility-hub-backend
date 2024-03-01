@@ -9,6 +9,7 @@ from resources.user import Register, Login, AdminLogin
 from resources.message import MessageResource
 from resources.course import CreateCourse, FindCourses, UpdateCourse, DeleteCourse
 from models import db
+import os
 
 
 app = Flask(__name__)
@@ -16,16 +17,16 @@ app = Flask(__name__)
 # socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Configure your Flask app as before
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-app.config["JWT_SECRET_KEY"] = "super-secret"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('database_URL')
+app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'nobilityhub@gmail.com'
-app.config['MAIL_PASSWORD'] = 'orcvtwyqejxejigv'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
-app.config['CHAT_ENGINE_PRIVATE_KEY'] = 'eed19375-3920-4850-8bad-a3822d296ca0'
-app.config['CHAT_ENGINE_PROJECT_ID'] = '4c4af054-358b-4205-bbc1-f87bad0b0a81'
+app.config['CHAT_ENGINE_PRIVATE_KEY'] = os.environ.get('CHAT_ENGINE_PRIVATE_KEY')
+app.config['CHAT_ENGINE_PROJECT_ID'] = os.environ.get('CHAT_ENGINE_PROJECT_ID')
 
 CORS(app)
 db.init_app(app)
