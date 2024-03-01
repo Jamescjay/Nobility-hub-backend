@@ -1,11 +1,15 @@
 from flask_restful import Resource, reqparse, fields, marshal_with
 from flask_jwt_extended import create_access_token, create_refresh_token
-from flask_bcrypt import generate_password_hash, check_password_hash
+from flask_bcrypt import Bcrypt
 from models import User, db
 from flask import request, current_app
 from flask_mail import Message
 import requests
 import os
+
+bcrypt = Bcrypt()
+
+
 
 user_fields = {
     "id": fields.Integer,
@@ -40,10 +44,9 @@ class Register(Resource):
     def post(self):
         from app import mail
 
-
         data = Register.parser.parse_args()
         user_password = data['password']
-        data['password'] = generate_password_hash(data['password'])
+        data['password'] = bcrypt.generate_password_hash(data['password']).decode('utf-8')  # Hash the password
         data['role'] = 'learner'
         user = User(**data)
 
@@ -82,6 +85,9 @@ class Register(Resource):
             return {"message": "Account created successfully", "status": "success", "user": user}, 201
         except Exception as e:
             return {"message": str(e), "status": "fail"}, 400
+
+
+
 
     def get(self, id=None):
         if id:
@@ -129,7 +135,7 @@ class Login(Resource):
         user = User.query.filter_by(email=data['email']).first()
 
         if user:
-            is_password_correct = check_password_hash(user.password, data['password'])
+            is_password_correct = bcrypt.check_password_hash(user.password, data['password'])
 
             if is_password_correct:
                 # Create access token
@@ -212,8 +218,8 @@ class AdminLogin(Resource):
             # Admin login successful
             access_token = create_access_token(identity=data['email'])
             refresh_token = create_refresh_token(data['email'])
-            return {"message": "Admin login successfully", "access_token": access_token, "refresh_token": refresh_token, "status": "success", "userName": chat_engine_username,
-                    "secret": data['password']}, 200
+            return {"message": "Admin login successfully", "access_token": access_token, "refresh_token": refresh_token, "status": "success", "userName":chat_engine_username,
+                        "secret": data['password']}, 200
 
         else:
             return {"message": "Invalid email/password for admin", "status": "fail"}, 403
