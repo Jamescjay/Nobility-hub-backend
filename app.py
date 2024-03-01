@@ -10,14 +10,15 @@ from resources.message import MessageResource
 from resources.course import CreateCourse, FindCourses, UpdateCourse, DeleteCourse
 from models import db
 import os
-
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 # CORS(app, resources={r"/*": {"origins": "*"}})
 # socketio = SocketIO(app, cors_allowed_origins="*")
+load_dotenv()
 
 # Configure your Flask app as before
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('database_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI')
 app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
